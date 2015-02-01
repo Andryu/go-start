@@ -10,8 +10,8 @@ import (
 )
 
 type CommonParams struct {
-    result string
-    code   string
+    Result string `json:"result"`
+    Status   string `json:"status"`
 }
 
 type ResponseParams CommonParams
@@ -40,10 +40,10 @@ func s_bonus(bonus string) ([]byte, error) {
     //return json.Marshal(res)
     return json.Marshal(struct {
             ResponseParams
-            bonus string
+            Bonus string `json:"bonus"`
         }{
             ResponseParams: ResponseParams(CommonParams{ "success", "200"}),
-            bonus:    bonus,
+            Bonus:    bonus,
         })
 }
 
@@ -81,7 +81,6 @@ func getRank(w http.ResponseWriter, r *http.Request){
         return
     }
     result, err := s_bonus(res)
-    fmt.Println(string(result))
     fmt.Fprintf(w, string(result))
 }
 

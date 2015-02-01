@@ -4,7 +4,7 @@ import (
    "fmt"
    "net/http"
    "log"
-    "os"
+    //"os"
     "github.com/garyburd/redigo/redis"
 )
 
@@ -13,11 +13,10 @@ type ResponseParam struct {
     code   string
 }
 
-func rankUp(w http.ResponseWriter, r *http.Request){
+func updateRank(w http.ResponseWriter, r *http.Request){
     r.ParseForm()        // オプション解析
     bonus := r.FormValue("bonus")
     point := r.FormValue("point")
-    //connect_redis("bonus:" + bonus, point)
 
     c := pool.Get()
     defer c.Close()
@@ -26,17 +25,15 @@ func rankUp(w http.ResponseWriter, r *http.Request){
     fmt.Println(test)
 }
 
-func connect_redis(key string, value string){
-    c, err := redis.Dial("tcp", "127.0.0.1:6379")
+func getRank(w http.ResponseWriter, r *http.Request){
+    r.ParseForm()        // オプション解析
+    bonus := r.FormValue("bonus")
 
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-
+    c := pool.Get()
     defer c.Close()
 
-    c.Do("SET", key, value)
+    test, _ := redis.String(c.Do("GET", "bonus:" + bonus))
+    fmt.Println(test)
 }
 
 func newPool() *redis.Pool {
@@ -56,7 +53,8 @@ func newPool() *redis.Pool {
 var pool = newPool()
 
 func main() {
-    http.HandleFunc("/rankup", rankUp)
+    http.HandleFunc("/rankup", updateRank)
+    http.HandleFunc("/rank", getRank)
     err := http.ListenAndServe(":9090", nil)
     if err != nil {
         log.Fatal("ListenAndServe: ", err)

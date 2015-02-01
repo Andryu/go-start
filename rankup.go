@@ -1,6 +1,7 @@
 package main
 
 import (
+   "encoding/json"
    "fmt"
    "net/http"
    "log"
@@ -8,10 +9,44 @@ import (
     "github.com/garyburd/redigo/redis"
 )
 
-type ResponseParam struct {
+type CommonParams struct {
     result string
     code   string
 }
+
+type ResponseParams CommonParams
+
+//type ResponseParams struct {
+//    common CommonParams
+//    bonus  string
+//}
+
+func e404() ([]byte, error) {
+    res := CommonParams{ "failed", "404" }
+    return json.Marshal(res)
+}
+
+func s_ok() ([]byte, error) {
+    res := CommonParams{ "success", "200"}
+    log.Println(res)
+    return json.Marshal(res)
+}
+
+func s_bonus(bonus string) ([]byte, error) {
+    //res := ResponseParams{
+    //    CommonParams{ " success", "200"},
+    //    bonus,
+    //}
+    //return json.Marshal(res)
+    return json.Marshal(struct {
+            ResponseParams
+            bonus string
+        }{
+            ResponseParams: ResponseParams(CommonParams{ "success", "200"}),
+            bonus:    bonus,
+        })
+}
+
 
 func updateRank(w http.ResponseWriter, r *http.Request){
     r.ParseForm()        // オプション解析
@@ -21,8 +56,15 @@ func updateRank(w http.ResponseWriter, r *http.Request){
     c := pool.Get()
     defer c.Close()
 
-    test, _ := c.Do("SET", "bonus:" + bonus, point)
-    fmt.Println(test)
+    _, err := c.Do("SET", "bonus:" + bonus, point)
+    if err != nil {
+        e, _ := e404()
+        fmt.Fprintf(w, string(e))
+        return
+    }
+    result, err := s_ok()
+    fmt.Println(string(result))
+    fmt.Fprintf(w, string(result))
 }
 
 func getRank(w http.ResponseWriter, r *http.Request){
@@ -32,8 +74,15 @@ func getRank(w http.ResponseWriter, r *http.Request){
     c := pool.Get()
     defer c.Close()
 
-    test, _ := redis.String(c.Do("GET", "bonus:" + bonus))
-    fmt.Println(test)
+    res, err := redis.String(c.Do("GET", "bonus:" + bonus))
+    if err != nil {
+        e, _ := e404()
+        fmt.Fprintf(w, string(e))
+        return
+    }
+    result, err := s_bonus(res)
+    fmt.Println(string(result))
+    fmt.Fprintf(w, string(result))
 }
 
 func newPool() *redis.Pool {

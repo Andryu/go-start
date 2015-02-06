@@ -14,12 +14,6 @@ type CommonParams struct {
     Status   string `json:"status"`
 }
 
-type ResponseParams CommonParams
-
-//type ResponseParams struct {
-//    common CommonParams
-//    bonus  string
-//}
 
 func e404() ([]byte, error) {
     res := CommonParams{ "failed", "404" }
@@ -33,16 +27,11 @@ func s_ok() ([]byte, error) {
 }
 
 func s_bonus(bonus string) ([]byte, error) {
-    //res := ResponseParams{
-    //    CommonParams{ " success", "200"},
-    //    bonus,
-    //}
-    //return json.Marshal(res)
     return json.Marshal(struct {
-            ResponseParams
+            CommonParams
             Bonus string `json:"bonus"`
         }{
-            ResponseParams: ResponseParams(CommonParams{ "success", "200"}),
+            CommonParams: CommonParams{ "success", "200"},
             Bonus:    bonus,
         })
 }

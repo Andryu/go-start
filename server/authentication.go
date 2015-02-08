@@ -6,46 +6,48 @@ package main
    message   : 署名元メッサージ
 */
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
-	"github.com/garyburd/redigo/redis"
-	"net/url"
+  "crypto/hmac"
+  "crypto/sha256"
+  "encoding/base64"
+  "github.com/garyburd/redigo/redis"
+  "net/url"
+  "fmt"
 )
 
 type Authentication struct {
-	RedisKey string
+  RedisKey string
 }
 
 type AuthenticateInterface interface {
-	Authenticate(signature string, message string)
+  Authenticate(signature string, message string)
 }
 
 func (a *Authentication) SetKeyForApi(level string) {
-	a.RedisKey = "api:" + level
+  a.RedisKey = "api:" + level
 }
 
 func (a *Authentication) SetKeyForApp(token string) {
-	a.RedisKey = "application:" + token
+  a.RedisKey = "application:" + token
 }
 
 func (a *Authentication) Authenticate(signature string, message string) bool {
-	c := pool.Get()
-	defer c.Close()
+  c := pool.Get()
+  defer c.Close()
 
-	k, err := redis.String(c.Do("GET", a.RedisKey))
-	if err != nil {
-		return false
-	}
-	if signature != hmacSha256(k, message) {
-		return false
-	}
-	return true
+  k, err := redis.String(c.Do("GET", a.RedisKey))
+  if err != nil {
+    return false
+  }
+  fmt.Println(hmacSha256(k ,message))
+  if signature != hmacSha256(k, message) {
+    return false
+  }
+  return true
 }
 
 // HMAC SHA256
 func hmacSha256(key string, message string) string {
-	hash := hmac.New(sha256.New, []byte(key))
-	hash.Write([]byte(message))
-	return url.QueryEscape(base64.URLEncoding.EncodeToString(hash.Sum(nil)))
+  hash := hmac.New(sha256.New, []byte(key))
+  hash.Write([]byte(message))
+  return url.QueryEscape(base64.URLEncoding.EncodeToString(hash.Sum(nil)))
 }

@@ -4,6 +4,7 @@
 
 ab -n 1000 -c 100 http://10.211.55.14:9090/rankup?bonus=fGhudaLda
 
+```
 Server Software:
 Server Hostname:        10.211.55.14
 Server Port:            9090
@@ -31,10 +32,11 @@ Processing:     1    6   1.9      6      12
 Waiting:        1    6   1.9      6      11
 Total:          3    7   1.5      7      12
 WARNING: The median and mean for the initial connection time are not within a normal deviation
-
+```
 
 - rankup.go
 
+```
 Server Software:
 Server Hostname:        10.211.55.14
 Server Port:            9090
@@ -60,9 +62,11 @@ Connect:        0    0   0.8      0       3
 Processing:     1   19   6.3     19      36
 Waiting:        1   19   6.3     19      36
 Total:          3   19   5.9     19      36
-
+```
 
 - net.go(build)
+
+```
 
 Server Software:
 Server Hostname:        10.211.55.14
@@ -119,3 +123,4 @@ Connect:        0    0   0.7      0       3
 Processing:     5   18   6.1     18      35
 Waiting:        5   18   6.0     18      33
 Total:          5   18   5.8     18      35
+```

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	//"log"
 	"bytes"
+	"flag"
+	"github.com/facebookgo/grace/gracehttp"
 	"text/template"
 )
 
@@ -59,6 +61,9 @@ func Log(handler http.Handler) http.Handler {
 }
 
 var pool = newPool()
+var (
+	address0 = flag.String("a0", ":8080", "Zero address to bind to.")
+)
 
 func main() {
 	// seelog
@@ -70,9 +75,22 @@ func main() {
 	fmt.Println(auth.Authenticate("jMI3uIk1j-7PFNGStR9JKrDP8QqZfZ4LFVbZb_0yhK4%3D", "message"))
 
 	// router
-	http.HandleFunc("/", Index)
-	err := http.ListenAndServe(":9090", Log(http.DefaultServeMux))
-	if err != nil {
-		//logs.Logger.Critical("Server err:%v", err)
-	}
+	//http.HandleFunc("/", Index)
+	//err := http.ListenAndServe(":9090", Log(http.DefaultServeMux))
+	//if err != nil {
+	//  //logs.Logger.Critical("Server err:%v", err)
+	//}
+
+	// gracefull
+	flag.Parse()
+	gracehttp.Serve(
+		&http.Server{Addr: *address0, Handler: newHandler()},
+	)
+
+}
+
+func newHandler() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", Index)
+	return mux
 }
